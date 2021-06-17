@@ -137,7 +137,9 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 								xByte = xByte | 1
 							}
 						}
-						xByte = xByte << 1
+						if k < 7 {
+							xByte = xByte << 1
+						}
 						x++
 					}
 					buf = append(buf, xByte)
