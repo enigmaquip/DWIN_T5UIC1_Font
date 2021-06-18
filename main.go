@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
@@ -28,7 +29,7 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 	if d.IsDir() {
 		return err
 	}
-	ext := filepath.Ext(path)
+	ext := strings.ToLower(filepath.Ext(path))
 	if ext != ".ttf" && ext != ".otf" {
 		// Not a font
 		return err
@@ -59,12 +60,12 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 	}
 	var filepos int64
 	for size, width := range widths {
-		face, err2 := opentype.NewFace(ttffont, &opentype.FaceOptions{Size: float64(width) * 1.5, DPI: 72, Hinting: font.HintingNone})
+		height := 2 * width
+		face, err2 := opentype.NewFace(ttffont, &opentype.FaceOptions{Size: float64(height), DPI: 72, Hinting: font.HintingNone})
 		if err2 != nil {
 			fmt.Printf("Error Creating TypeFace")
 			return err
 		}
-		height := 2 * width
 		var numBytes int
 		if width%8 > 0 {
 			numBytes = ((width / 8) + 1)
@@ -84,7 +85,7 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 			//fmt.Println(bounds)
 			charWidth := bounds.Max.X.Round() + 2
 			DotX := 2 - bounds.Min.X.Round()
-			DotY := height - (width * 2 / 3)
+			DotY := height - (width * 1 / 3)
 			resize := false
 			picWidth := width
 			if charWidth > width {
@@ -108,7 +109,7 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 			/*
 				//command line ascii visualization test code
 				const asciiArt = ".++8"
-				buf := make([]byte, 0, height*(width+1))
+				buft := make([]byte, 0, height*(width+1))
 				for y := 0; y < height; y++ {
 					for x := 0; x < width; x++ {
 						c := asciiArt[dst.GrayAt(x, y).Y>>6]
@@ -119,11 +120,11 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 						} else if y == DotY-1 {
 							c = '_'
 						}
-						buf = append(buf, c)
+						buft = append(buft, c)
 					}
-					buf = append(buf, '\n')
+					buft = append(buft, '\n')
 				}
-				os.Stdout.Write(buf)
+				os.Stdout.Write(buft)
 				fmt.Println("")
 			*/
 			var buf []byte
