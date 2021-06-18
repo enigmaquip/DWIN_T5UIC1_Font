@@ -82,16 +82,16 @@ func ProcessFont(path string, d fs.DirEntry, err error) error {
 		}
 		for i := 32; i < 127; i++ {
 			bounds, _ := font.BoundString(face, string(i))
-			//fmt.Println(bounds)
-			charWidth := bounds.Max.X.Round() + 2
-			DotX := 2 - bounds.Min.X.Round()
-			DotY := height - (width * 1 / 3)
+			charWidth := bounds.Max.X.Ceil() - bounds.Min.X.Floor()
 			resize := false
 			picWidth := width
+			// some characters are bigger than the width (m, w, etc.) They're drawn at full size and shrunk in the x direction
 			if charWidth > width {
-				picWidth = charWidth
+				picWidth = charWidth + 2
 				resize = true
 			}
+			DotX := (picWidth-charWidth)/2 - bounds.Min.X.Floor()
+			DotY := height - (width * 1 / 3)
 			dst := image.NewGray(image.Rect(0, 0, picWidth, height))
 			d := font.Drawer{
 				Dst:  dst,
